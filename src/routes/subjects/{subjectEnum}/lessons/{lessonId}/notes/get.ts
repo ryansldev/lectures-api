@@ -5,6 +5,8 @@ import { notesTable } from "../../../../../../db/schema";
 import { eq } from "drizzle-orm";
 import { db } from "../../../../../../db";
 
+import { noteDto } from "../../../../../../types/note-dto";
+
 export const getLessonNotesRoute: FastifyPluginAsyncZod = async app => {
   app.get('/subjects/:subject/lessons/:lessonId/notes', {
      schema: {
@@ -13,11 +15,14 @@ export const getLessonNotesRoute: FastifyPluginAsyncZod = async app => {
       params: z.object({
         subject: subjectsEnumSchema,
         lessonId: z.coerce.number().int().positive(),
-      })
+      }),
+      response: {
+        200: noteDto.array(),
+      }
     },
   }, async request => {
     const { lessonId } = request.params;
-    const note = await db.select().from(notesTable).where(eq(notesTable.lessonId, lessonId)).orderBy(notesTable.createdAt);
-    return note
+    const notes = await db.select().from(notesTable).where(eq(notesTable.lessonId, lessonId)).orderBy(notesTable.createdAt);
+    return notes
   })
 }
